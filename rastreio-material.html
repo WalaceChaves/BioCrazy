@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreio de Material — BioCrazy Diagnósticos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:    #378ADD;
+    --blue-lt: #E6F1FB;
+    --blue-dk: #185FA5;
+    --teal:    #1D9E75;
+    --teal-lt: #E1F5EE;
+    --teal-dk: #0F6E56;
+    --amber:   #EF9F27;
+    --amber-lt:#FAEEDA;
+    --amber-dk:#854F0B;
+    --gray-lt: #F4F3F0;
+    --gray-md: #888780;
+    --gray-dk: #2C2C2A;
+    --border:  #E0DED8;
+    --text:    #1A1A18;
+    --muted:   #6B6A66;
+    --hint:    #9E9D99;
+    --bg:      #F7F6F3;
+    --white:   #FFFFFF;
+    --radius:  10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER BAR ── */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--blue);
+    flex-shrink: 0;
+  }
+  .topbar-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .topbar-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ── PATIENT CARD ── */
+  .patient-section {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 20px;
+  }
+  .patient-name {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+  }
+  .patient-order {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .info-item {
+    background: var(--gray-lt);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .info-item.full { grid-column: 1 / -1; }
+  .info-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--hint);
+    margin-bottom: 3px;
+  }
+  .info-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── HISTORY SECTION ── */
+  .history-header {
+    padding: 18px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .history-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+  }
+  .history-count {
+    font-size: 11px;
+    color: var(--hint);
+  }
+
+  .history-list {
+    padding: 0 12px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── EXAM CARD ── */
+  .exam-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    position: relative;
+    padding-left: 48px;
+  }
+  .exam-indicator {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ind-done       { background: var(--teal); }
+  .ind-processing { background: var(--amber); }
+  .ind-received   { background: var(--blue); }
+  .ind-pending    { background: var(--border); }
+
+  .exam-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .exam-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-done       { background: var(--teal-lt);  color: var(--teal-dk); }
+  .badge-processing { background: var(--amber-lt); color: var(--amber-dk); }
+  .badge-received   { background: var(--blue-lt);  color: var(--blue-dk); }
+  .badge-pending    { background: var(--gray-lt);  color: var(--gray-md); }
+
+  .exam-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .exam-meta svg { flex-shrink: 0; }
+
+  .exam-tecnica {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .exam-tecnica svg { flex-shrink: 0; }
+  .exam-tecnica strong { font-weight: 600; color: var(--text); }
+  .exam-obs {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--gray-lt);
+    border-left: 2px solid var(--border);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 7px 10px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 24px 20px;
+    font-size: 11px;
+    color: var(--hint);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<div class="topbar">
+  <div class="topbar-dot"></div>
+  <span class="topbar-name">BioCrazy Diagnósticos</span>
+  <span class="topbar-sub">Rastreio de material</span>
+</div>
+
+<!-- ── DADOS DO PACIENTE ── -->
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  EDITÁVEL: altere os dados abaixo para cada paciente ║
+  ╚══════════════════════════════════════════════════════╝
+-->
+<div class="patient-section">
+  <div class="patient-name">Maria Aparecida Ferreira Santos</div>
+  <div class="patient-order">Pedido nº LAB-2024-08471</div>
+
+  <div class="info-grid">
+
+    <div class="info-item">
+      <div class="info-label">CPF</div>
+      <div class="info-value">042.***.*89-01</div>
+    </div>
+
+    <div class="info-item">
+      <div class="info-label">Data de nascimento</div>
+      <div class="info-value">12/03/1978</div>
+    </div>
+
+    <div class="info-item">
+      <div class="info-label">Data do pedido</div>
+      <div class="info-value">10/06/2026</div>
+    </div>
+
+    <div class="info-item">
+      <div class="info-label">Médico solicitante</div>
+      <div class="info-value">Dr. Carlos Menezes</div>
+    </div>
+
+    <div class="info-item full">
+      <div class="info-label">Indicação Clínica</div>
+      <div class="info-value">Rastreamento metabólico e controle de rotina anual</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── HISTÓRICO DE MATERIAIS ── -->
+<div class="history-header">
+  <span class="history-title">Histórico do material</span>
+  <span class="history-count">5 exames</span>
+</div>
+
+<div class="history-list">
+
+  <!--
+    STATUS disponíveis:
+      Concluído   → ind-done       / badge-done
+      Em análise  → ind-processing / badge-processing
+      Recebido    → ind-received   / badge-received
+      Aguardando  → ind-pending    / badge-pending
+  -->
+
+  <!-- EXAME 1 -->
+  <div class="exam-card">
+    <div class="exam-indicator ind-done"></div>
+    <div class="exam-top">
+      <span class="exam-name">Hemograma completo</span>
+      <span class="badge badge-done">Concluído</span>
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      10/06/2026 às 09:14 · Sangue
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Téc. Ana Lima
+    </div>
+    <div class="exam-tecnica">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h6"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M9 21h6"/></svg>
+      <strong>Técnica:</strong> Automação hematológica (contador eletrônico)
+    </div>
+    <div class="exam-obs">Resultado disponível. Nenhuma alteração crítica identificada.</div>
+  </div>
+
+  <!-- EXAME 2 -->
+  <div class="exam-card">
+    <div class="exam-indicator ind-done"></div>
+    <div class="exam-top">
+      <span class="exam-name">Glicemia em jejum</span>
+      <span class="badge badge-done">Concluído</span>
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      10/06/2026 às 09:14 · Sangue
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Téc. Ana Lima
+    </div>
+    <div class="exam-tecnica">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h6"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M9 21h6"/></svg>
+      <strong>Técnica:</strong> Enzimático colorimétrico (hexoquinase)
+    </div>
+    <div class="exam-obs">Valor: 98 mg/dL — dentro do intervalo de referência.</div>
+  </div>
+
+  <!-- EXAME 3 -->
+  <div class="exam-card">
+    <div class="exam-indicator ind-processing"></div>
+    <div class="exam-top">
+      <span class="exam-name">Urina tipo I (EAS)</span>
+      <span class="badge badge-processing">Em análise</span>
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      10/06/2026 às 09:20 · Urina
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Téc. Paulo Souza
+    </div>
+    <div class="exam-tecnica">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h6"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M9 21h6"/></svg>
+      <strong>Técnica:</strong> Físico-química com fita reagente e microscopia do sedimento
+    </div>
+    <div class="exam-obs">Amostra em processamento. Previsão de conclusão: hoje às 14h.</div>
+  </div>
+
+  <!-- EXAME 4 -->
+  <div class="exam-card">
+    <div class="exam-indicator ind-received"></div>
+    <div class="exam-top">
+      <span class="exam-name">Parasitológico de fezes</span>
+      <span class="badge badge-received">Recebido</span>
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      10/06/2026 às 09:22 · Fezes
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Recepção Lab.
+    </div>
+    <div class="exam-tecnica">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h6"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M9 21h6"/></svg>
+      <strong>Técnica:</strong> Hoffmann, Pons e Janer (sedimentação espontânea)
+    </div>
+    <div class="exam-obs">Material recebido e aguardando início da análise laboratorial.</div>
+  </div>
+
+  <!-- EXAME 5 -->
+  <div class="exam-card">
+    <div class="exam-indicator ind-pending"></div>
+    <div class="exam-top">
+      <span class="exam-name">TSH / T4 Livre</span>
+      <span class="badge badge-pending">Aguardando</span>
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      10/06/2026 às 09:14 · Sangue
+    </div>
+    <div class="exam-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Pendente
+    </div>
+    <div class="exam-tecnica">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h6"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M9 21h6"/></svg>
+      <strong>Técnica:</strong> Eletroquimioluminescência (ECLIA)
+    </div>
+    <div class="exam-obs">Exame enviado para laboratório parceiro. Prazo estimado: 2 dias úteis.</div>
+  </div>
+
+</div>
+
+<div class="footer">BioCrazy Diagnósticos · Sistema de rastreio de material</div>
+
+</body>
+</html>
